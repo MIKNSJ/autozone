@@ -10,6 +10,7 @@ session = requests_cache.CachedSession()
 
 
 
+# https://ing.wd3.myworkdayjobs.com/en-US/JVSGBLCOR
 url = "https://ing.wd3.myworkdayjobs.com/wday/cxs/ing/JVSGBLCOR/jobs"
 
 # where postman placed this code
@@ -45,7 +46,7 @@ headers = {
 limit = 10
 # Offset = pointer/index of the current entry, think of data as an array
 offset = 0
-MAX_JOBS = 31
+MAX_JOBS = 51
 # store each json entry
 allJobs = []
 
@@ -72,7 +73,6 @@ while offset < MAX_JOBS:
 
 # If you want to manually clear cache, uncomment the line below, then run and comment out the same line.
 #requests_cache.clear()
-
 
 
 
