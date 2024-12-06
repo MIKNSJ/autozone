@@ -184,6 +184,63 @@ while offsetThree < MAX_JOBS_THREE:
 
 
 
+# ========== FOUR  ====================================================================================================
+
+session4 = requests_cache.CachedSession()
+
+# https://boeing.wd1.myworkdayjobs.com/EXTERNAL_CAREERS
+url = "https://boeing.wd1.myworkdayjobs.com/wday/cxs/boeing/EXTERNAL_CAREERS/jobs"
+
+headers = {
+  'accept': 'application/json',
+  'accept-language': 'en-US',
+  'content-type': 'application/json',
+  'cookie': 'wd-browser-id=32bd1299-88ac-46e5-ba2f-86a1e1ace050; CALYPSO_CSRF_TOKEN=b592c648-0895-494b-8bc0-aca3efefe7d5; PLAY_SESSION=6f2a75aa7625d235a69b4bb7a28b081b93ad81f7-boeing_pSessionId=hmj3ln1n3cbc2p41gl3b6obf9v&instance=vps-prod-v10zu64i.prod-vps.pr502.cust.ash.wd; wday_vps_cookie=3984160778.53810.0000; __cflb=02DiuEyZJzFVW6zKk23ddk9h3x7TomPC1xfJ692KaEaDJ; _cfuvid=p0dZnD7GXU5Ef6aK5N1s61LLyXqQ8tUQKjqXsHYVZs8-1733443859833-0.0.1.1-604800000; timezoneOffset=480; __cf_bm=VS32NsSEVYDKrUmKYdqvZVsmFWPnzN3uqy7J_px04oc-1733445428-1.0.1.1-4fC83wj.SvYIqOemhxrgqq_1DKg8UlSIF3KN1r1kKh_dtk75fiapAe5LfNa0.504ROLHqPuM0bPP6JNseNp.EA; PLAY_SESSION=6f2a75aa7625d235a69b4bb7a28b081b93ad81f7-boeing_pSessionId=hmj3ln1n3cbc2p41gl3b6obf9v&instance=vps-prod-v10zu64i.prod-vps.pr502.cust.ash.wd; __cf_bm=IEJ4PEZw2SdS3ATBZN6mxSQDjF67Bhe15yNMJF9O65Q-1733445530-1.0.1.1-gjS1KdoTimVMe7Jr9ehE2MSl_m25bQ2RgS4PaGQehGKsCfYzXUZ5mMhj_ygTFt1NfLGpQvn45n4CnOy041qHcg; _cfuvid=X2MOkdvE2lEwMKoF7O75EBE_xudnniS070pUigHB95w-1733445530333-0.0.1.1-604800000; wday_vps_cookie=3984160778.53810.0000',
+  'origin': 'https://boeing.wd1.myworkdayjobs.com',
+  'priority': 'u=1, i',
+  'referer': 'https://boeing.wd1.myworkdayjobs.com/EXTERNAL_CAREERS',
+  'sec-ch-ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+  'sec-ch-ua-mobile': '?0',
+  'sec-ch-ua-platform': '"Windows"',
+  'sec-fetch-dest': 'empty',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-site': 'same-origin',
+  'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  'x-calypso-csrf-token': 'b592c648-0895-494b-8bc0-aca3efefe7d5'
+}
+
+limitFour = 10
+offsetFour = 0
+MAX_JOBS_FOUR = 51
+allJobsFour = []
+
+while offsetFour < MAX_JOBS_FOUR:
+    # Prepare payload with the updated offset
+    payload = json.dumps({
+        "appliedFacets": {},
+        "limit": limitFour,
+        "offset": offsetFour,
+        "searchText": ""
+    })
+
+    # Make the request and store it in cache for an specified period of time
+    response4 = session4.request("POST", url, headers=headers, data=payload, expire_after=3600)
+    responseJSONFour = json.loads(response4.text)
+
+    # Extract job postings and append to the list
+    jobsFour = responseJSONFour.get("jobPostings", [])
+    if not jobsFour:
+        break  # Stop if no jobs are returned
+
+    allJobsFour.extend(jobsFour)
+    offsetFour+= limitFour # Increment the offset for the next page
+
+# ========== END OF FOUR ==============================================================================================
+
+
+
+
+
 try:
     df = pd.DataFrame(allJobs, index=None)
     df.dropna(inplace=True)
@@ -208,7 +265,6 @@ try:
 
     df2 = pd.DataFrame(allJobsTwo, index=None)
     df2.dropna(inplace=True)
-    columns=["Title", "Link", "Type", "Location", "Posted On", "Job ID"]
     df2.columns = columns
     df2["Company"] = "RTX"
     col = df2.pop("Company")
@@ -231,7 +287,7 @@ try:
     df3.dropna(inplace=True)
     columns=["Title", "Link", "Location", "Posted On", "Job ID"]
     df3.columns = columns
-    df3["Company"] = "Aerospace Corporation"
+    df3["Company"] = "Boeing"
     col = df3.pop("Company")
     df3.insert(0, col.name, col)
     df3.insert(2, "Type", "See details")
@@ -249,7 +305,30 @@ try:
     df3 = df3[df3["Link"].str.contains("CA", na=False)]
 
 
-    dfCombined = pd.concat([df, df2, df3])
+    df4 = pd.DataFrame(allJobsFour, index=None)
+    df4.dropna(inplace=True)
+    columns=["Title", "Link", "Location", "Posted On", "Type", "Job ID"]
+    df4.columns = columns
+    df4["Company"] = "Boeing"
+    col = df4.pop("Company")
+    df4.insert(0, col.name, col)
+    col = df4.pop("Type")
+    df4.insert(2, col.name, col)
+    df4["Title"] = df4["Title"].str.lower()
+    df4["Title"] = df4["Title"].str.strip()
+    df4["Posted On"] = df4["Posted On"].str.lower()
+    df4["Posted On"] = df4["Posted On"].str.strip()
+    df4["Location"] = df4["Location"].str.strip()
+    df4 = df4[df4["Title"].str.contains("software", na=False) |
+            df4["Title"].str.contains("it ", na=False) |
+            df4["Title"].str.contains("information ", na=False) |
+            df4["Title"].str.contains("data", na=False) |
+            df4["Title"].str.contains("programmer", na=False)]
+    df4 = df4[df4["Posted On"].str.contains("today", na=False)]
+    df4 = df4[df4["Link"].str.contains("USA", na=False)]
+
+
+    dfCombined = pd.concat([df, df2, df3, df4])
     dfCombined.to_csv("jobs_data.csv", index=False)
     print("A .csv file has been created in your folder.")
 except Exception as e:
